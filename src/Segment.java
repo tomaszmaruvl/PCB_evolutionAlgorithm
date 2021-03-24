@@ -7,6 +7,11 @@ public class Segment {
         this.lenght = length;
     }
 
+    public Segment(Segment seg){
+        this.direction = seg.direction;
+        this.lenght = seg.lenght;
+    }
+
     public boolean isVertical(){
         switch (this.direction){
             case DOWN: return true;

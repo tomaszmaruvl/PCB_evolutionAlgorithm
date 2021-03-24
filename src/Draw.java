@@ -8,22 +8,26 @@ import drawing.Point;
 public class Draw {
 
 	public static void main(String[] args) {
-		Loader loader = new Loader("C:/Users/Tomasz Marulewski/Desktop/_nowe_SI/PCB_evolutionAlgorithm/problems/zad3.txt");
+		Loader loader = new Loader("/Users/tomaszmarulewski/Documents/_studia/PCB_evolutionAlgorithm/src/problems/zad1.txt");
 		try {
 			loader.load();
 		} catch (Exception e) {
-			Object x = e;
 		}
 
-		ArrayList<ArrayList<Point>> toDraw = prepareTracksToDraw(loader.connections, false, loader.rows, loader.columns);
+		EvolutionAlgorithm ea = new EvolutionAlgorithm(100, 1000, 1, 1, false, loader, 10);
+		ea.Calculate();
+		
+		ArrayList<ArrayList<Point>> toDraw = prepareTracksToDraw(ea.population.getWorstSolution(), true, loader.rows, loader.columns);
+		ArrayList<ArrayList<Point>> toDraw2 = prepareTracksToDraw(ea.population.getBestSolution(), true, loader.rows, loader.columns);
 
 		EventQueue.invokeLater(new Runnable() {
 			@Override
 			public void run() {
-				new MyFrame(loader.rows, loader.columns, 30, 20, toDraw);
-
+				new MyFrame(loader.rows, loader.columns, 30, 100, toDraw);
+				new MyFrame(loader.rows, loader.columns, 30, 100, toDraw2);
 			}
 		});
+		System.out.println("log");
 	}
 
 	public static ArrayList<ArrayList<Point>> prepareTracksToDraw( ArrayList<Track> tracks, boolean tracksExist, int rows, int columns){
@@ -31,11 +35,7 @@ public class Draw {
 		for (int i = 0 ; i < tracks.size() ; i++){
 			Track n = tracks.get(i);
 			if (!tracksExist) n.setRandomTrack();
-			for(int j = 0 ; j<10 ;j++){
-			// n.mutateTrackOneSegment();
-			// n.mutateTrackSplitSegment();
 			
-		}
 			System.out.println("____________________________________");
 			System.out.println(n.startingPoint);
         	System.out.println(n.track);

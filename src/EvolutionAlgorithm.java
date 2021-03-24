@@ -10,41 +10,45 @@ public class EvolutionAlgorithm {
     double selectionProp;
     boolean roulette;
     int tournamentSize;
+    Loader loader;
 
     Population population;
 
-    public EvolutionAlgorithm(int popQuant, int genQuant, double mutProp, double crossProp, boolean rou, Problem pb, int tsize) {
+    public EvolutionAlgorithm(int popQuant, int genQuant, double mutProp, double crossProp, boolean rou, Loader ld,
+            int tsize) {
         this.populationQuantity = popQuant;
         this.generationQuantity = genQuant;
         this.mutationProp = mutProp;
         this.crossoverProp = crossProp;
-        this.problem = pb;
+        this.loader = ld;
         this.roulette = rou;
         this.tournamentSize = tsize;
         this.population = new Population(populationQuantity);
     }
 
-    public void Calculate(int attempt) {
-        population.generatePopulation(problem.loader.citiesList);
-        problem.calculateFitness(population);
+    public void Calculate() {
+        population.generatePopulation(loader.connections, loader.rows, loader.columns);
+        population.calculateAllFitensses();
+        population.calculateAverageSolution();
         population.calculateStandardDeviation();
 
-        Logger log_pop = new Logger("Populations" + attempt + ".txt");
-        // Logger log_ind = new Logger("Individuals"+ attempt + ".txt");
+        Logger log_pop = new Logger("Populations" + 3 + ".txt");
+        Logger log_ind = new Logger("Individuals" + 3 + ".txt");
         log_pop.logPopulation(population, false);
-        // log_ind.logIndividuals(population, false);
+        log_ind.logIndividuals(population, false);
 
         for (int i = 0; i < generationQuantity; i++) {
             population = newGeneration();
-            mutatePopulationInverse();
-            problem.calculateFitness(population);
+            mutatePopulation();
+            population.calculateAllFitensses();
+            population.calculateAverageSolution();
             population.calculateStandardDeviation();
             log_pop.logPopulation(population, true);
-            // log_ind.logIndividuals(population, true);
-            if(i == (generationQuantity -1)){
-            System.out.println(population.bestSolution.fitness);
+            log_ind.logIndividuals(population, true);
+            if (i == (generationQuantity - 1)) {
+                System.out.println(population.bestSolution.fitness);
             }
-            
+
         }
     }
 
@@ -62,9 +66,9 @@ public class EvolutionAlgorithm {
                 second = population.RunTournament(tournamentSize);
             }
             if (gen.nextDouble() < crossoverProp) {
-                var result = first.CrossPMX(second, problem.loader.citiesList);
-                first = result.child1;
-                second = result.child2;
+                Solution[] result = first.doCrossover(second);
+                first = result[0];
+                second = result[1];
             }
             pop.add(first);
             pop.add(second);
@@ -72,21 +76,24 @@ public class EvolutionAlgorithm {
         return new Population(pop);
     }
 
-    public void mutatePopulationInverse(){
+    public void mutatePopulation() {
         Random gen = new Random();
-        for (int i = 0 ; i < populationQuantity ; i++){
-            if(gen.nextDouble() < mutationProp){
-                population.population.get(i).mutationInverse();
+        for (int i = 0; i < populationQuantity; i++) {
+            if (gen.nextDouble() < mutationProp) {
+                ArrayList<Track> tracks = population.population.get(i).tracks;
+                for (int k = 0; k < tracks.size(); k++) {
+                    tracks.get(k).mutateTrackOneSegment();
+                }
             }
         }
     }
 
-    public void mutatePopulationSwap(){
-        Random gen = new Random();
-        for (int i = 0 ; i < populationQuantity ; i++){
-            if(gen.nextDouble() < mutationProp){
-                population.population.get(i).mutationSwap();
-            }
-        }
-    }
+    // public void mutatePopulationSwap(){
+    // Random gen = new Random();
+    // for (int i = 0 ; i < populationQuantity ; i++){
+    // if(gen.nextDouble() < mutationProp){
+    // population.population.get(i).mutationSwap();
+    // }
+    // }
+    // }
 }

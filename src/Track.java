@@ -15,6 +15,12 @@ public class Track {
         this.endingPoint = end;
     }
 
+    public Track(Track trackToCopy) {
+        this.track = trackToCopy.track != null ? new ArrayList<Segment>(trackToCopy.track) : null;
+        this.startingPoint = trackToCopy.startingPoint;
+        this.endingPoint = trackToCopy.endingPoint;
+    }
+
     public void setSimpliestTrack() {
         this.track = new ArrayList<Segment>();
         int x_dif = this.endingPoint.x - this.startingPoint.x;
@@ -41,54 +47,70 @@ public class Track {
     }
 
     public void mutateTrackOneSegment() {
-        Random generator = new Random();
-        int trackSize = this.track.size();
-        int elementOfTrack = generator.nextInt(trackSize);
-        int elementBefore = elementOfTrack == 0 ? 0 : elementOfTrack - 1;
-        int elementAfter = elementOfTrack == trackSize ? trackSize : elementOfTrack + 1;
-        Segment chosenSegment = this.track.get(elementOfTrack);
-        if (chosenSegment.isVertical()) {
-            Direction moveDirection = getRandomDirection("horizontal", generator);
-            this.track.add(elementBefore, new Segment(1, moveDirection));
-            this.track.add(elementAfter + 1, new Segment(1, getOppositeDirection(moveDirection)));
-        } else {
-            Direction moveDirection = getRandomDirection("vertical", generator);
-            this.track.add(elementBefore, new Segment(1, moveDirection));
-            this.track.add(elementAfter + 1, new Segment(1, getOppositeDirection(moveDirection)));
-        }
-        normalizeTrack();
-        while (hasZeros()) {
-            removeZeroLengthSegments();
-            normalizeTrack();
-        }
+        int i = 0;
+        do {
+            if (i != 0) {
+                setRandomTrack();
+            } else {
+                Random generator = new Random();
+                int trackSize = this.track.size();
+                int elementOfTrack = generator.nextInt(trackSize);
+                int elementBefore = elementOfTrack == 0 ? 0 : elementOfTrack - 1;
+                int elementAfter = elementOfTrack == trackSize ? trackSize : elementOfTrack + 1;
+                Segment chosenSegment = this.track.get(elementOfTrack);
+                if (chosenSegment.isVertical()) {
+                    Direction moveDirection = getRandomDirection("horizontal", generator);
+                    this.track.add(elementOfTrack, new Segment(1, moveDirection));
+                    this.track.add(elementAfter + 1, new Segment(1, getOppositeDirection(moveDirection)));
+                } else {
+                    Direction moveDirection = getRandomDirection("vertical", generator);
+                    this.track.add(elementOfTrack, new Segment(1, moveDirection));
+                    this.track.add(elementAfter + 1, new Segment(1, getOppositeDirection(moveDirection)));
+                }
+                normalizeTrack();
+                while (hasZeros()) {
+                    removeZeroLengthSegments();
+                    normalizeTrack();
+                }
+            }
+            i++;
+        } while (!verifyTrack());
     }
 
     public void mutateTrackSplitSegment() {
-        Random generator = new Random();
-        int trackSize = this.track.size();
-        int elementOfTrack = generator.nextInt(trackSize);
-        int elementBefore = elementOfTrack == 0 ? 0 : elementOfTrack - 1;
-        int elementAfter = elementOfTrack == trackSize ? trackSize : elementOfTrack + 1;
-        Segment chosenSegment = this.track.get(elementOfTrack);
-        int initialLenght = chosenSegment.lenght;
-        int placeOfSplit = generator.nextInt(chosenSegment.lenght);
-        this.track.get(elementOfTrack).lenght = placeOfSplit;
-        this.track.add(elementAfter, new Segment(initialLenght - placeOfSplit, chosenSegment.direction));
-        chosenSegment = this.track.get(elementOfTrack);
-        if (chosenSegment.isVertical()) {
-            Direction moveDirection = getRandomDirection("horizontal", generator);
-            this.track.add(elementBefore, new Segment(1, moveDirection));
-            this.track.add(elementAfter + 1, new Segment(1, getOppositeDirection(moveDirection)));
-        } else {
-            Direction moveDirection = getRandomDirection("vertical", generator);
-            this.track.add(elementBefore, new Segment(1, moveDirection));
-            this.track.add(elementAfter + 1, new Segment(1, getOppositeDirection(moveDirection)));
-        }
-        normalizeTrack();
-        while (hasZeros()) {
-            removeZeroLengthSegments();
-            normalizeTrack();
-        }
+        int i = 0;
+        do {
+            if (i != 0) {
+                setRandomTrack();
+            } else {
+                Random generator = new Random();
+                int trackSize = this.track.size();
+                int elementOfTrack = generator.nextInt(trackSize);
+                int elementBefore = elementOfTrack == 0 ? 0 : elementOfTrack - 1;
+                int elementAfter = elementOfTrack == trackSize ? trackSize : elementOfTrack + 1;
+                Segment chosenSegment = this.track.get(elementOfTrack);
+                int initialLenght = chosenSegment.lenght;
+                int placeOfSplit = generator.nextInt(chosenSegment.lenght);
+                this.track.get(elementOfTrack).lenght = placeOfSplit;
+                this.track.add(elementAfter, new Segment(initialLenght - placeOfSplit, chosenSegment.direction));
+                chosenSegment = this.track.get(elementOfTrack);
+                if (chosenSegment.isVertical()) {
+                    Direction moveDirection = getRandomDirection("horizontal", generator);
+                    this.track.add(elementBefore, new Segment(1, moveDirection));
+                    this.track.add(elementAfter + 1, new Segment(1, getOppositeDirection(moveDirection)));
+                } else {
+                    Direction moveDirection = getRandomDirection("vertical", generator);
+                    this.track.add(elementBefore, new Segment(1, moveDirection));
+                    this.track.add(elementAfter + 1, new Segment(1, getOppositeDirection(moveDirection)));
+                }
+                normalizeTrack();
+                while (hasZeros()) {
+                    removeZeroLengthSegments();
+                    normalizeTrack();
+                }
+            }
+            i++;
+        } while (!verifyTrack());
     }
 
     public ArrayList<Point> getTrackCoordinated() {
@@ -163,6 +185,7 @@ public class Track {
             if (nextSegment.direction == actualSegment.direction) {
                 actualSegment.lenght += nextSegment.lenght;
                 toRemove.add(i + 1);
+                i++;
             }
             if (nextSegment.direction == getOppositeDirection(actualSegment.direction)) {
                 actualSegment.lenght = actualSegment.lenght - nextSegment.lenght;
@@ -171,6 +194,7 @@ public class Track {
                     actualSegment.direction = getOppositeDirection(actualSegment.direction);
                 }
                 toRemove.add(i + 1);
+                i++;
             }
         }
         ArrayList<Segment> normalizedTrack = new ArrayList<Segment>();
@@ -216,5 +240,13 @@ public class Track {
         if (startX == this.endingPoint.x && startY == this.endingPoint.y)
             return true;
         return false;
+    }
+
+    public int calculateTotalTrackLength() {
+        int result = 0;
+        for (int i = 0; i < this.track.size(); i++) {
+            result += this.track.get(i).lenght;
+        }
+        return result;
     }
 }
