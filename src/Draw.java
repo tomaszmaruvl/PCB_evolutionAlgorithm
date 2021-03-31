@@ -8,17 +8,18 @@ import drawing.Point;
 public class Draw {
 
 	public static void main(String[] args) {
-		Loader loader = new Loader("/Users/tomaszmarulewski/Documents/_studia/PCB_evolutionAlgorithm/src/problems/zad1.txt");
+		Loader loader = new Loader("/Users/tomaszmarulewski/Documents/_studia/PCB_evolutionAlgorithm/src/problems/zad2.txt");
 		try {
 			loader.load();
 		} catch (Exception e) {
 		}
 
-		EvolutionAlgorithm ea = new EvolutionAlgorithm(100, 1000, 1, 1, false, loader, 10);
-		ea.Calculate();
+		EvolutionAlgorithm ea = new EvolutionAlgorithm(100, 2000, 0.25, 0.7, true, loader, 30);
+		ea.runRandomSolution(10000);
+		//ea.Calculate();
 		
-		ArrayList<ArrayList<Point>> toDraw = prepareTracksToDraw(ea.population.getWorstSolution(), true, loader.rows, loader.columns);
-		ArrayList<ArrayList<Point>> toDraw2 = prepareTracksToDraw(ea.population.getBestSolution(), true, loader.rows, loader.columns);
+		ArrayList<ArrayList<Point>> toDraw = prepareTracksToDraw(ea.population.worstSolution.tracks, true, loader.rows, loader.columns);
+		ArrayList<ArrayList<Point>> toDraw2 = prepareTracksToDraw(ea.population.bestSolution.tracks, true, loader.rows, loader.columns);
 
 		EventQueue.invokeLater(new Runnable() {
 			@Override
@@ -42,7 +43,9 @@ public class Draw {
         	System.out.println(n.endingPoint);
 			System.out.println(n.verifyTrack());
         	System.out.println("____________________________________");
-			result.add(n.getTrackCoordinated());
+			ArrayList<Point> p = n.getTrackCoordinated();
+			System.out.println(p);
+			result.add(p);
 		}
 		return result; 
 	}

@@ -14,6 +14,7 @@ public class Solution {
     public int totalPathLenght;
     public int totalSegmentsAmount;
     public int fitness;
+    public double przystosowanie;
 
     public Solution(ArrayList<Track> tracks, int rows, int columns) {
         this.outOfBounds = 0;
@@ -28,6 +29,11 @@ public class Solution {
 
     public Solution(Solution solution) {
         this.tracks = (ArrayList<Track>) Helpers.cloneArrayList(solution.tracks);
+        for (int i = 0; i < tracks.size(); i++) {
+            if (!tracks.get(i).verifyTrack()) {
+                int k = 0;
+            }
+        }
         this.outOfBounds = 0;
         this.tracksCrossing = 0;
         this.totalPathLenght = 0;
@@ -37,12 +43,14 @@ public class Solution {
         this.plate = generateNewZerosPlate(rows, columns);
     }
 
-    public void calculateFitness(){
+    public void calculateFitness() {
         calculateFitnessInner();
-        this.fitness =  this.outOfBounds * Constants.CROSSINGS_WEIGHT + 
-                        this.tracksCrossing * Constants.CROSSINGS_WEIGHT +
-                        this.totalPathLenght * Constants.PATH_LENGTH_WEIGHT+
-                        this.totalSegmentsAmount * Constants.SEGMENTS_COUNT_WEUGHT; 
+        if(this.tracksCrossing == 0 ){
+            int k = 0;
+        }
+        this.fitness = this.outOfBounds * Constants.OUT_OF_BOUNDS_WEIGHT
+                + this.tracksCrossing * Constants.CROSSINGS_WEIGHT + this.totalPathLenght * Constants.PATH_LENGTH_WEIGHT
+                + this.totalSegmentsAmount * Constants.SEGMENTS_COUNT_WEUGHT;
     }
 
     public void calculateFitnessInner() {
@@ -53,24 +61,8 @@ public class Solution {
             for (int j = 0; j < trackCoordinated.size(); j++) {
                 if (!isPointInBounds(trackCoordinated.get(j))) {
                     this.outOfBounds += 1;
-                }
-                if (j != 0) {
-                    Point start = trackCoordinated.get(j - 1);
-                    Point end = trackCoordinated.get(j);
-                    boolean vertical = end.x - start.x == 0 ? true : false;
-                    if (vertical) {
-                        for (int k = start.y; k < end.y; k++) {
-                            if (k > 0 && k < columns && isPointInBounds(start)) {
-                                this.plate[start.x][k] += 1;
-                            }
-                        }
-                    } else {
-                        for (int k = start.x; k < end.x; k++) {
-                            if (k > 0 && k < rows && isPointInBounds(start)) {
-                                this.plate[k][start.y] += 1;
-                            }
-                        }
-                    }
+                } else {
+                    this.plate[trackCoordinated.get(j).x][trackCoordinated.get(j).y] += 1;
                 }
             }
         }
@@ -113,16 +105,22 @@ public class Solution {
         }
     }
 
-    public Solution[] doCrossover(Solution sol){
+    public Solution[] doCrossover(Solution sol, int quant) {
         Solution[] result = new Solution[2];
-        Random r = new Random();
-        int toChange = r.nextInt(this.tracks.size());
-        Track fromSol = new Track(sol.tracks.get(toChange));
-        Track fromThis = new Track(this.tracks.get(toChange));
-        sol.tracks.set(toChange, fromThis);
-        this.tracks.set(toChange,fromSol);
-        result[0]= this;
-        result[1]= sol;
+        for (int i = 0; i < quant; i++) {
+            Random r = new Random();
+            int toChange = r.nextInt(this.tracks.size());
+            Track fromSol = new Track(sol.tracks.get(toChange));
+            Track fromThis = new Track(this.tracks.get(toChange));
+            sol.tracks.set(toChange, fromThis);
+            this.tracks.set(toChange, fromSol);
+        }
+        result[0] = this;
+        result[1] = sol;
         return result;
+    }
+
+    public void calculatePrzystosowanie(int bestFitness){
+        this.przystosowanie = (double) bestFitness/this.fitness;
     }
 }

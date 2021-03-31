@@ -13,4 +13,8 @@ public class Point {
         return "x: " + this.x + " y: " + this.y;
     }
 
+    public String usedString(){
+        return "x"+this.x+"y"+this.y;
+    }
+
 }
